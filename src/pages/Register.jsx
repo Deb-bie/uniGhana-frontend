@@ -1,11 +1,47 @@
-import React from 'react'
-import {Link} from "react-router-dom"
+import React, {useState} from 'react'
+import {Link, useNavigate} from "react-router-dom"
+import axios from "axios"
 
 import Image from "../assets/image.jpg"
 
 import "./style.css"
 
+const url ="http://localhost:5000/api/register"
+
 const Register = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setloading] = useState(false)
+
+
+  const navigate = useNavigate()
+
+
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setloading(true);
+    try {
+      await axios.post(
+        url,
+        {
+          username: username,
+          email: email,
+          password: password,
+          confirmPassword: confirmPassword
+        }
+      ).((res) => )
+    } catch (error) {
+      if (error.response) {
+       setError(error.response.data.msg) 
+      }
+    }
+  } 
+
+
   return (
     <div className="register">
       <div className="register-container">
@@ -21,12 +57,16 @@ const Register = () => {
               <span>Create an Account</span>
             </div>
 
-            <form>
+            <form onSubmit={handleRegister} >
+              <p>{error}</p>
+
               <label>Username</label>
               <input 
                 type="text"
                 required
                 placeholder='eg. Debbie'
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
 
               <label>Email</label>
@@ -34,6 +74,8 @@ const Register = () => {
                 type="email"
                 required
                 placeholder='uni@unighana.com'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
 
               <label>Password</label>
@@ -41,6 +83,8 @@ const Register = () => {
                 type="password"
                 required
                 placeholder='*********'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
 
               <label>Confirm Password</label>
@@ -48,10 +92,12 @@ const Register = () => {
                 type="password"
                 required
                 placeholder='*********'
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
 
               <div className='button-container'>
-                <button>Register</button>
+                <button type='submit'>Register</button>
               </div>
             </form>
 
