@@ -1,11 +1,51 @@
-import React from 'react'
-import {Link} from "react-router-dom"
-
+import React, {useState, useContext} from 'react'
+import {Link, useNavigate} from "react-router-dom"
+import axios from "axios"
 import Image from "../assets/image.jpg"
-
 import "./style.css"
+import { AuthContext } from '../context/AuthContext'
+
+const url ="api/login"
 
 const Login = () => {
+
+    const { loading, error, dispatch } = useContext(AuthContext);
+    const navigate = useNavigate()
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        dispatch({ type: "LOGIN_START" });
+        try {
+          const success = await axios.post(
+            url,
+            {
+                email: email,
+                password: password
+            }
+        );
+        console.log(success)
+
+        if (success.status === 200) {
+            dispatch({ type: "LOGIN_SUCCESS", payload: success.data.username });
+            navigate(
+                "/dashboard",
+                {
+                    state: {
+                        username: success.data.username
+                    }
+                }
+            );
+          }
+        } catch (err) {
+          dispatch({ type: "LOGIN_FAILURE", payload: err.response.data });
+        }
+    };
+
+
   return (
     <div className="login">
             <div className="login-container">
@@ -22,12 +62,16 @@ const Login = () => {
                             <span>Login into your Account</span>
                         </div>
 
-                        <form>
+                        <form onSubmit={handleLogin}>
+                            <p className='error'>{error}</p>
+
                             <label>Email</label>
                             <input 
                                 type="email"
                                 required
                                 placeholder='uni@unighana.com'
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
 
                             <label>Password</label>
@@ -35,12 +79,16 @@ const Login = () => {
                                 type="password"
                                 required
                                 placeholder='*********'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
 
-                            <Link to="#" className='forgot'>forgot password &nbsp;</Link>
-
                             <div className='button-container'>
-                                <button>Sign in</button>
+                                <button type='submit' disabled={loading}>
+                                    {
+                                        loading ? "Signing In" : "Sign In"
+                                    }
+                                </button>
                             </div>
 
                         </form>
@@ -49,118 +97,11 @@ const Login = () => {
                             New here? &nbsp;
                             <Link to="register">Create an Account</Link>
                         </div>
-
-
-
-
-
-
-
                     </div>
-
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    {/* <div className="login-container-extra">
-                        <h1 className="heading">Log into your account</h1>
-
-                        <form>
-                            <label>Email</label>
-                            <input
-                                type="example@example.com"
-                                placeholder="Email"
-                                required
-                            />
-
-                            <label>Password</label>
-                            <input
-                                type="text"
-                                placeholder="Password"
-                                required
-                            />
-
-                            <button>
-                                Login 
-                            </button>
-
-                            <div>
-                                <Link to="#">Forgot password?</Link>
-
-                                <span>
-                                    Don't have an account? <Link to="register">Register</Link>
-                                </span>
-                            </div>
-                            
-                        </form>
-                    </div> */}
             </div>
         </div>
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  )
+    )
 }
 
 export default Login

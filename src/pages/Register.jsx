@@ -1,45 +1,49 @@
-import React, {useState} from 'react'
+import React, {useState, useContext} from 'react'
 import {Link, useNavigate} from "react-router-dom"
-import axios from "axios"
-
+import axios from "axios";
+import { AuthContext } from '../context/AuthContext'
 import Image from "../assets/image.jpg"
-
 import "./style.css"
 
-const url ="http://localhost:5000/api/register"
-
 const Register = () => {
+  const { loading, error, dispatch } = useContext(AuthContext);
+  const navigate = useNavigate()
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setloading] = useState(false)
-
-
-  const navigate = useNavigate()
-
-
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setloading(true);
+    dispatch({ type: "REGISTER_START" });
     try {
-      await axios.post(
-        url,
+      const success = await axios.post(
+        "api/register",
         {
           username: username,
           email: email,
           password: password,
           confirmPassword: confirmPassword
         }
-      ).((res) => )
-    } catch (error) {
-      if (error.response) {
-       setError(error.response.data.msg) 
+      )
+
+      if(success.status === 200){
+        dispatch({ type: "REGISTER_SUCCESS", payload: success.data.username });
+        navigate(
+          "/dashboard",
+          {
+            state: {
+              username: username
+            }
+          }
+        );
       }
+    } catch (error) {
+      dispatch({ type: "REGISTER_FAILURE", payload: error.response.data });
     }
-  } 
+
+  }
 
 
   return (
@@ -58,7 +62,8 @@ const Register = () => {
             </div>
 
             <form onSubmit={handleRegister} >
-              <p>{error}</p>
+
+              <p className='error'>{error}</p>
 
               <label>Username</label>
               <input 
@@ -97,13 +102,17 @@ const Register = () => {
               />
 
               <div className='button-container'>
-                <button type='submit'>Register</button>
+                <button type='submit' disabled={loading}>
+                  {
+                    loading ? "Registering" : "Register"
+                  }
+                  </button>
               </div>
             </form>
 
             <div className='account'>
               Already have an Account? &nbsp;
-              <Link to="/">Login into your</Link>
+              <Link to="/">Login into your Account</Link>
             </div>
           </div>
         </div>
